@@ -1,6 +1,7 @@
+library(plyr)
 options(warn=-1)
 
-best <- function(state, outcome) {
+rankhospital <- function(state, outcome, num= "best") {
   ## List of outcomes
   outcomelist <- c("heart attack", "heart failure", "pneumonia")
   
@@ -14,8 +15,8 @@ best <- function(state, outcome) {
   if(!(outcome %in% outcomelist)){
     stop("invalid outcome")
   }
-
-  BestHospitals <- function(dataframe, state, outcome){
+  
+  RankHospitals <- function(dataframe, state, outcome){
     if(outcome=="heart attack"){
       condition <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack"
     } else if(outcome=="heart failure"){
@@ -23,19 +24,23 @@ best <- function(state, outcome) {
     } else if(outcome=="pneumonia"){
       condition <- "Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia"
     }
+    ## subset on the state
     data               <- subset(dataframe,subset =(State==state))
     data[, condition]  <- as.numeric(data[, condition])
-    Min                <- min(data[, condition], na.rm=TRUE)
-    BestHospsCond      <- data[, condition]==Min
-    BestHosps          <- data[BestHospsCond,]$Hospital.Name
-    BestHosps          <- BestHosps[!is.na(BestHosps)]
-    if(length(BestHosps) > 1){
-      BestHosps <- sort(BestHosps)
-      BestHosps <- BestHosps[1]
+    ## subset on the three relevant columns
+    data <- data[, c("Hospital.Name", "State", condition)]
+    data <- data[ !is.na(data[,condition]),]
+    HospsOrder         <- data$Hospital.Name[order(data[,condition], na.last=TRUE, decreasing=FALSE)]
+    HospsOrder         <- arrange(data, data[,condition], data$Hospital.Name)$Hospital.Name
+    if(num=="best") {
+      num = 1
+    } else if(num=="worst"){
+      num = length(HospsOrder)
     }
-    print(BestHosps)
+    
+    print(HospsOrder[num])
   }
   
   ## Return hospital name in that state with lowest 30-day death
-  BestHospitals(outcomedata, state=state, outcome)
+  RankHospitals(outcomedata, state=state, outcome)
 }
