@@ -1,7 +1,9 @@
+## Disable warnings 
 options(warn=-1)
 
+## function to get best hospitals given a state and and an outcome
 best <- function(state, outcome) {
-  ## List of outcomes
+  ## List of possible outcomes
   outcomelist <- c("heart attack", "heart failure", "pneumonia")
   
   ## Read outcome data
@@ -16,6 +18,7 @@ best <- function(state, outcome) {
   }
 
   BestHospitals <- function(dataframe, state, outcome){
+    ## match outcome name with column name from df
     if(outcome=="heart attack"){
       condition <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack"
     } else if(outcome=="heart failure"){
@@ -23,8 +26,11 @@ best <- function(state, outcome) {
     } else if(outcome=="pneumonia"){
       condition <- "Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia"
     }
+    ## subset on the given state
     data               <- subset(dataframe,subset =(State==state))
+    ## convert to numeric
     data[, condition]  <- as.numeric(data[, condition])
+    ## get best hospital
     Min                <- min(data[, condition], na.rm=TRUE)
     BestHospsCond      <- data[, condition]==Min
     BestHosps          <- data[BestHospsCond,]$Hospital.Name
