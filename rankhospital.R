@@ -1,4 +1,5 @@
 library(plyr)
+## Disable comments
 options(warn=-1)
 
 rankhospital <- function(state, outcome, num= "best") {
